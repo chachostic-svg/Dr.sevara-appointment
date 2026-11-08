@@ -84,10 +84,14 @@ export function MiniApp({ doctor, localPreview = false, initialYear, initialMont
     const tg = getTelegram();
     if (!tg) return;
 
-    tg.ready();
-    tg.expand();
+    try {
+      tg.ready();
+      tg.expand();
+    } catch {
+      /* Telegram WebView still works without expand() */
+    }
     setInsideTelegram(Boolean(tg.initData));
-    document.documentElement.classList.toggle("dark", tg.colorScheme === "dark");
+    document.documentElement.classList.remove("dark");
     setName("");
 
     const user = tg.initDataUnsafe?.user;
@@ -102,22 +106,21 @@ export function MiniApp({ doctor, localPreview = false, initialYear, initialMont
     const interval = setInterval(clearAutofill, 150);
     const stop = setTimeout(() => clearInterval(interval), 2500);
 
-    const onTheme = () => {
-      document.documentElement.classList.toggle("dark", tg.colorScheme === "dark");
-    };
-    tg.onEvent("themeChanged", onTheme);
     return () => {
       clearInterval(interval);
       clearTimeout(stop);
-      tg.offEvent("themeChanged", onTheme);
     };
   }, []);
 
   useEffect(() => {
     let ignore = false;
     async function load() {
-      const { data } = await fetchJson(`/api/slots?from=${from}&to=${to}`);
-      if (!ignore) setDays(data.days || {});
+      try {
+        const { data } = await fetchJson(`/api/slots?from=${from}&to=${to}`);
+        if (!ignore) setDays(data.days || {});
+      } catch {
+        if (!ignore) setDays({});
+      }
     }
     load();
     return () => {
@@ -127,21 +130,32 @@ export function MiniApp({ doctor, localPreview = false, initialYear, initialMont
 
   useEffect(() => {
     const tg = getTelegram();
-    if (!tg?.MainButton) return undefined;
-    if (!locale) {
-      tg.MainButton.hide();
+    const button = tg?.MainButton;
+    if (!button) return undefined;
+    try {
+      if (!locale) {
+        button.hide();
+        return undefined;
+      }
+      button.setText(status === "loading" ? t("booking.sending") : t("nav.book"));
+      if (canSubmit && status !== "loading" && status !== "success" && !(booked && !cancelled)) {
+        button.show();
+        button.enable();
+      } else {
+        button.hide();
+      }
+      const onClick = () => submit();
+      button.onClick(onClick);
+      return () => {
+        try {
+          button.offClick(onClick);
+        } catch {
+          /* ignore */
+        }
+      };
+    } catch {
       return undefined;
     }
-    tg.MainButton.setText(status === "loading" ? t("booking.sending") : t("nav.book"));
-    if (canSubmit && status !== "loading" && status !== "success" && !(booked && !cancelled)) {
-      tg.MainButton.show();
-      tg.MainButton.enable();
-    } else {
-      tg.MainButton.hide();
-    }
-    const onClick = () => submit();
-    tg.MainButton.onClick(onClick);
-    return () => tg.MainButton.offClick(onClick);
   }, [canSubmit, status, booked, cancelled, name, phone, selectedDate, selectedTime, comment, locale, t]);
 
   function shiftMonth(delta) {

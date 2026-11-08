@@ -29,7 +29,7 @@ const nextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org https://telegram.org",
+              "frame-ancestors 'self' https://web.telegram.org https://webk.telegram.org https://webz.telegram.org https://k.telegram.org https://z.telegram.org https://telegram.org https://*.telegram.org https://t.me",
           },
         ],
       },

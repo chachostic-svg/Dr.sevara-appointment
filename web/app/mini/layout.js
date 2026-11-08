@@ -1,5 +1,3 @@
-import Script from "next/script";
-
 export const metadata = {
   title: "Запись — Dr. Sevara",
   description: "Календарь записи к врачу-неврологу Хамидовой Севаре Миржалиловне.",
@@ -15,10 +13,5 @@ export const viewport = {
 };
 
 export default function MiniLayout({ children }) {
-  return (
-    <>
-      <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
-      {children}
-    </>
-  );
+  return children;
 }

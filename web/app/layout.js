@@ -1,5 +1,6 @@
 import { Manrope } from "next/font/google";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import { Providers } from "./providers";
 import { STORAGE_KEY, normalizeLocale } from "@/lib/i18n";
 import "./globals.css";
@@ -23,6 +24,10 @@ export default async function RootLayout({ children }) {
   return (
     <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth" className={`${manrope.variable} h-full`}>
       <body className="min-h-full bg-bg text-ink antialiased">
+        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+        <Script id="telegram-webapp-ready" strategy="beforeInteractive">
+          {`try{var w=window.Telegram&&window.Telegram.WebApp;if(w){w.ready();w.expand();}}catch(e){}`}
+        </Script>
         <Providers initialLocale={locale}>{children}</Providers>
       </body>
     </html>
