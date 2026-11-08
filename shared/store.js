@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { neon } from "@neondatabase/serverless";
 
 const sharedDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(sharedDir, "..");
@@ -42,7 +43,6 @@ async function db() {
     throw new Error("DATABASE_URL не задан");
   }
   if (!sqlClient) {
-    const { neon } = await import("@neondatabase/serverless");
     sqlClient = neon(process.env.DATABASE_URL);
   }
   return sqlClient;

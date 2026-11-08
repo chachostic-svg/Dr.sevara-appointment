@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm install && npm install --prefix ../bot",
+  "installCommand": "npm install && npm install --prefix ../bot && npm install --prefix ..",
   "crons": [
     {
       "path": "/api/reminders/tick",

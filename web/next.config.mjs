@@ -12,7 +12,6 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "/*": ["../data/**/*", "../shared/**/*", "../bot/**/*"],
   },
-  serverExternalPackages: ["@neondatabase/serverless", "grammy"],
   allowedDevOrigins: [
     "*.ngrok-free.app",
     "*.ngrok.io",
@@ -38,6 +37,10 @@ const nextConfig = {
   },
   turbopack: {
     root: repoRoot,
+    resolveAlias: {
+      "@neondatabase/serverless": path.join(__dirname, "node_modules/@neondatabase/serverless"),
+      grammy: path.join(__dirname, "node_modules/grammy"),
+    },
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
