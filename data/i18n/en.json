@@ -1,0 +1,238 @@
+{
+  "meta": {
+    "title": "Dr. Sevara — Sevara Khamidova, neurologist",
+    "description": "Book neurologist Sevara Mirjalilovna Khamidova. Adult and pediatric neurology. Medion Family Hospital and CityMed Clinic, 09:00–13:00."
+  },
+  "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  "monthYear": "{month} {year}",
+  "nav": {
+    "about": "About",
+    "reviews": "Reviews",
+    "booking": "Booking",
+    "book": "Book now",
+    "admin": "Admin",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "hero": {
+    "clinic": "Medion Family Hospital · CityMed Clinic",
+    "kicker": "Neurology · professional care",
+    "headline": "Nervous system health — in trusted hands.",
+    "subtitle": "An individual approach to diagnosing and treating neurological conditions in adults and children.",
+    "meta": "{name} · {title} · {years} years in practice",
+    "book": "Book now",
+    "about": "About the doctor",
+    "years": "years in practice",
+    "minutes": "minutes per visit"
+  },
+  "features": [
+    {
+      "title": "Children and adults",
+      "text": "Appointments are with neurologist Sevara Mirjalilovna Khamidova."
+    },
+    {
+      "title": "Two clinics",
+      "text": "Mon, Wed, Fri — Medion Family Hospital. Tue and Sat — CityMed Clinic. Both 09:00–13:00."
+    },
+    {
+      "title": "By appointment only",
+      "text": "Each visit is 30 minutes. Book on the website or in the Telegram bot."
+    }
+  ],
+  "about": {
+    "eyebrow": "About the doctor",
+    "title": "The full patient path under control",
+    "slideBio": "How the visit works",
+    "hours": "Where and when",
+    "education": "Education and certificates"
+  },
+  "doctor": {
+    "name": "Sevara Mirjalilovna Khamidova",
+    "title": "Neurologist",
+    "experience": "12–14",
+    "degree": "",
+    "tagline": "Adult and pediatric neurology: a calm review of symptoms and a clear plan.",
+    "bio": "I am a neurologist for children and adults. Visits are by appointment only, 30 minutes, 09:00–13:00. Mon, Wed and Fri — Medion Family Hospital (Istirohat St., 258). Tue and Sat — CityMed Clinic (Farabi St., 415). You can book on the website or through the Telegram bot.",
+    "approach": [
+      "Adult and pediatric neurology",
+      "Appointments only, no walk-ins",
+      "30 minutes per visit, 09:00–13:00"
+    ],
+    "education": [
+      {
+        "year": "2004–2011",
+        "place": "Tashkent Medical Academy",
+        "detail": "General medicine (bachelor’s degree)"
+      },
+      {
+        "year": "2012–2014",
+        "place": "Clinical residency",
+        "detail": "Neurology"
+      },
+      {
+        "year": "2016",
+        "place": "Neurorehabilitation and functional diagnostics",
+        "detail": "Certificate"
+      },
+      {
+        "year": "2017",
+        "place": "Pediatric neurology",
+        "detail": "Retraining, certificate"
+      }
+    ],
+    "specialties": [
+      "Adult neurology",
+      "Pediatric neurology"
+    ],
+    "hours": "09:00–13:00, 30 minutes",
+    "address": "",
+    "clinics": [
+      {
+        "name": "Medion Family Hospital",
+        "address": "Istirohat St., 258",
+        "days": "Mon, Wed, Fri"
+      },
+      {
+        "name": "CityMed Clinic",
+        "address": "Farabi St., 415",
+        "days": "Tue, Sat"
+      }
+    ]
+  },
+  "booking": {
+    "eyebrow": "Booking",
+    "title": "Choose a day and time",
+    "lead": "The calendar only opens working days. The slot you pick is at the clinic where Sevara Khamidova sees patients that day. Hours are 09:00–13:00, 30 minutes, by appointment.",
+    "pickDay": "Choose a day first",
+    "slotsOn": "Slots on {date}",
+    "clinic": "{name}, {address}",
+    "noSlots": "No free slots on this day.",
+    "name": "Name",
+    "namePlaceholder": "How should we address you",
+    "phone": "Phone",
+    "phoneHint": "The +998 code is already there — enter your number only.",
+    "telegram": "Telegram for reminders",
+    "telegramHint": "Optional. If you leave this empty, we will not send a reminder.",
+    "telegramBot": " Message {bot} first so reminders can reach you.",
+    "comment": "Comment",
+    "commentPlaceholder": "What is bothering you, and whether this is a follow-up",
+    "submit": "Send request",
+    "sending": "Sending...",
+    "fail": "Could not book",
+    "okRemind": "Request received for {date} at {time}. {clinic} A Telegram reminder will arrive one day and two hours before the visit.",
+    "okNoRemind": "Request received for {date} at {time}. {clinic} No Telegram username — we will not send a reminder.",
+    "cancel": "Cancel appointment",
+    "cancelled": "The appointment is cancelled. This time is free again.",
+    "cancelFail": "Could not cancel the appointment",
+    "slotTaken": "This slot is already taken. Please pick another time."
+  },
+  "reviews": {
+    "eyebrow": "Reviews",
+    "title": "How patients describe the visit",
+    "forumEyebrow": "Forum",
+    "forumTitle": "Leave a review",
+    "forumLead": "Tell us how the appointment went. Your message appears on the site right away.",
+    "name": "Name",
+    "namePlaceholder": "How should we address you",
+    "text": "Review",
+    "textPlaceholder": "What helped, how the conversation went",
+    "rating": "Rating",
+    "submit": "Publish review",
+    "sending": "Sending...",
+    "ok": "Thank you — the review is published.",
+    "fail": "Could not send the review",
+    "empty": "No reviews yet — you can write the first one."
+  },
+  "footer": {
+    "lead": "Book neurologist {name}. Website and Telegram slots match.",
+    "contacts": "Contacts",
+    "booking": "Booking",
+    "phone": "Administrator: {value}",
+    "bot": "Bot: {value}",
+    "admin": "Admin sign-in"
+  },
+  "lang": {
+    "ask": "Выберите язык / Tilni tanlang / Choose language",
+    "askCommands": "Choose language with a command:\n/ru Русский\n/uz O‘zbekcha\n/en English",
+    "ru": "Русский",
+    "uz": "O‘zbekcha",
+    "en": "English"
+  },
+  "bot": {
+    "intro": "Hello! This is booking with neurologist Sevara Mirjalilovna Khamidova.\nAdult and pediatric neurology, by appointment, 09:00–13:00.\nMon, Wed, Fri — Medion Family Hospital, Istirohat st. 258.\nTue and Sat — CityMed Clinic, Farobi st. 415.\n\nThe calendar is the Book button next to the message field.",
+    "introGroup": "Hello! This is booking with neurologist Sevara Mirjalilovna Khamidova.\nAdult and pediatric neurology, by appointment, 09:00–13:00.\nMon, Wed, Fri — Medion Family Hospital, Istirohat st. 258.\nTue and Sat — CityMed Clinic, Farobi st. 415.\n\nTo book, tap Book below.",
+    "introChatOnly": "Hello! This is booking with neurologist Sevara Mirjalilovna Khamidova.\nAdult and pediatric neurology, by appointment, 09:00–13:00.\nMon, Wed, Fri — Medion Family Hospital, Istirohat st. 258.\nTue and Sat — CityMed Clinic, Farobi st. 415.\n\nTap “In chat” to pick a day and time.",
+    "inChat": "In chat",
+    "askName": "What is your name?",
+    "askPhone": "Send your phone number.",
+    "sendPhone": "Share phone",
+    "pickDay": "Choose a day:",
+    "noDays": "No free days in the coming weeks. Please try later.",
+    "calendarFail": "Could not load the calendar. Make sure the Dr. Sevara site is running.",
+    "slotsOn": "Free times on {date}:{where}",
+    "noSlotsDay": "That day is already full. Please pick another day.",
+    "slotsFail": "Could not load time slots.",
+    "confirmTitle": "Please check your request:",
+    "confirmName": "name: {name}",
+    "confirmPhone": "phone: {phone}",
+    "confirmDate": "date: {date} at {time}",
+    "confirmClinic": "clinic: {clinic}",
+    "confirmComment": "comment: {comment}",
+    "noComment": "no comment",
+    "confirm": "Confirm",
+    "restart": "Start over",
+    "cancel": "Cancel appointment",
+    "bookFail": "Could not book. Please try another slot.",
+    "siteDown": "The site is unavailable. Please try again.",
+    "cancelFail": "Could not cancel the appointment.",
+    "slotFreed": "This time is free again.",
+    "bookAgain": "You can book again with the Book button.",
+    "restartHint": "Let’s start over. Tap In chat or the Book button next to the message field.",
+    "menuHint": "The calendar is the Book button next to the message field.",
+    "menuHintGroup": "To book, tap the Book button below.",
+    "menu": "Book",
+    "langSaved": "Done. Client bookings will arrive in English."
+  },
+  "mini": {
+    "title": "Booking: {name}",
+    "lead": "{title} · the day sets the clinic",
+    "outside": "This Mini App is meant to open from the Telegram bot.",
+    "preview": "Local Mini App preview — {url}. The booking is saved in admin; Telegram reminders will not go out.",
+    "previewHint": "Same as Telegram, without the bot. Pick a day and slot, send the request, then check the admin calendar.",
+    "bookedChat": "The booking card was sent to the bot chat.",
+    "slotFreed": "This time is free again.",
+    "canceling": "Cancelling..."
+  },
+  "admin": {
+    "metaTitle": "Dr. Sevara admin",
+    "calendar": "Appointment calendar",
+    "schedule": "Schedule",
+    "logout": "Log out",
+    "lead": "Clients with Telegram get an automatic reminder one day and two hours before the visit. You can also send it from here.",
+    "search": "Search clients by name or phone",
+    "noClients": "No clients found.",
+    "clientAppointments": "Client appointments",
+    "emptyDay": "No appointments on this day.",
+    "emptySearch": "No appointments for these clients with this filter.",
+    "all": "All",
+    "cancelledFilter": "Cancelled",
+    "cancelled": "Cancelled",
+    "remind": "Remind in Telegram",
+    "reminding": "Sending...",
+    "reminded": "Reminder sent to Telegram.",
+    "remindFail": "Could not send",
+    "sourceMini": "booked via Mini App",
+    "sourceBot": "booked via Telegram",
+    "sourceWeb": "booked via website",
+    "visitOne": "{count} visit",
+    "visitFew": "{count} visits",
+    "visitMany": "{count} visits",
+    "loginTitle": "Admin sign-in",
+    "password": "Password",
+    "enter": "Sign in",
+    "entering": "Signing in...",
+    "loginFail": "Wrong password"
+  }
+}

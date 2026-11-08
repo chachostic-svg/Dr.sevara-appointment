@@ -1,0 +1,238 @@
+{
+  "meta": {
+    "title": "Dr. Sevara — Xamidova Sevara Mirjalilovna, nevrolog",
+    "description": "Nevrolog Xamidova Sevara Mirjalilovnaga yozilish. Kattalar va bolalar nevrologiyasi. Medion Family Hospital va CityMed Clinic, 09:00–13:00."
+  },
+  "weekdays": ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"],
+  "months": ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"],
+  "monthYear": "{month}, {year}",
+  "nav": {
+    "about": "Shifokor haqida",
+    "reviews": "Sharhlar",
+    "booking": "Qabul",
+    "book": "Yozilish",
+    "admin": "Admin panel",
+    "menu": "Menyu",
+    "openMenu": "Menyuni ochish",
+    "closeMenu": "Menyuni yopish"
+  },
+  "hero": {
+    "clinic": "Medion Family Hospital · CityMed Clinic",
+    "kicker": "Nevrologiya · professional yordam",
+    "headline": "Asab tizimi salomatligi — ishonchli qo‘llarda.",
+    "subtitle": "Kattalar va bolalardagi nevrologik kasalliklarni tashxislash va davolashga individual yondashuv.",
+    "meta": "{name} · {title} · {years} yillik amaliyot",
+    "book": "Yozilish",
+    "about": "Shifokor haqida",
+    "years": "yillik amaliyot",
+    "minutes": "daqiqa qabul"
+  },
+  "features": [
+    {
+      "title": "Kattalar va bolalar",
+      "text": "Qabulni shifokor-nevrolog Xamidova Sevara Mirjalilovna olib boradi."
+    },
+    {
+      "title": "Ikki klinika",
+      "text": "Du, Chor, Ju — Medion Family Hospital. Se va Shanba — CityMed Clinic. Har ikkisida 09:00–13:00."
+    },
+    {
+      "title": "Faqat oldindan yozilish",
+      "text": "Slot 30 daqiqa. Sayt yoki Telegram-bot orqali yozilish mumkin."
+    }
+  ],
+  "about": {
+    "eyebrow": "Shifokor haqida",
+    "title": "Bemor yo‘li to‘liq nazoratda",
+    "slideBio": "Qabulga yondashuv",
+    "hours": "Qayerda va qachon qabul",
+    "education": "Ta’lim va sertifikatlar"
+  },
+  "doctor": {
+    "name": "Xamidova Sevara Mirjalilovna",
+    "title": "Shifokor-nevrolog",
+    "experience": "12–14",
+    "degree": "",
+    "tagline": "Kattalar va bolalar nevrologiyasi: shikoyatlarni sokin ko‘rib chiqamiz.",
+    "bio": "Shifokor-nevrolog: bolalar va kattalarni qabul qilaman. Qabul oldindan yozilish bilan, 30 daqiqa, 09:00–13:00. Du, Chor va Ju — Medion Family Hospital (Istirohat ko‘chasi, 258). Se va Shanba — CityMed Clinic (Farobiy ko‘chasi, 415). Sayt yoki Telegram-bot orqali yozilish mumkin.",
+    "approach": [
+      "Kattalar va bolalar nevrologiyasi",
+      "Qabul faqat oldindan yozilish bilan",
+      "Qabul 30 daqiqa, 09:00–13:00"
+    ],
+    "education": [
+      {
+        "year": "2004–2011",
+        "place": "Toshkent tibbiyot akademiyasi",
+        "detail": "Davolash fakulteti (bakalavr)"
+      },
+      {
+        "year": "2012–2014",
+        "place": "Klinik ordinatura",
+        "detail": "«Nevrologiya» mutaxassisligi"
+      },
+      {
+        "year": "2016",
+        "place": "Neyroreabilitatsiya va funksional diagnostika",
+        "detail": "Sertifikat"
+      },
+      {
+        "year": "2017",
+        "place": "Bolalar nevrologiyasi",
+        "detail": "Qayta tayyorlash, sertifikat"
+      }
+    ],
+    "specialties": [
+      "Kattalar nevrologiyasi",
+      "Bolalar nevrologiyasi"
+    ],
+    "hours": "09:00–13:00, 30 daqiqa",
+    "address": "",
+    "clinics": [
+      {
+        "name": "Medion Family Hospital",
+        "address": "Istirohat ko‘chasi, 258",
+        "days": "Du, Chor, Ju"
+      },
+      {
+        "name": "CityMed Clinic",
+        "address": "Farobiy ko‘chasi, 415",
+        "days": "Se, Shanba"
+      }
+    ]
+  },
+  "booking": {
+    "eyebrow": "Qabul",
+    "title": "Kun va vaqtni tanlang",
+    "lead": "Kalendar faqat ish kunlarini ochadi. Tanlangan kunda slotlar o‘sha kuni Xamidova Sevara Mirjalilovna qabul qiladigan klinikaga bog‘lanadi. Qabul 09:00–13:00, 30 daqiqa, oldindan yozilish bilan.",
+    "pickDay": "Avval kunni tanlang",
+    "slotsOn": "{date} uchun slotlar",
+    "clinic": "{name}, {address}",
+    "noSlots": "Bu kunga bo‘sh slot yo‘q.",
+    "name": "Ism",
+    "namePlaceholder": "Sizga qanday murojaat qilaylik",
+    "phone": "Telefon",
+    "phoneHint": "+998 kodi allaqachon qo‘yilgan, faqat o‘z raqamingizni kiriting.",
+    "telegram": "Eslatma uchun Telegram",
+    "telegramHint": "Ixtiyoriy. Bo‘sh qoldirsangiz, eslatma yuborilmaydi.",
+    "telegramBot": " Xabarlar yetib borishi uchun {bot} botiga yozing.",
+    "comment": "Izoh",
+    "commentPlaceholder": "Nima bezovta qilayotgani, takroriy qabul yoki yo‘q",
+    "submit": "Ariza qoldirish",
+    "sending": "Yuborilmoqda...",
+    "fail": "Yozib bo‘lmadi",
+    "okRemind": "Ariza {date}, soat {time} ga qabul qilindi. {clinic} Eslatma Telegramga qabuldan bir kun va 2 soat oldin keladi.",
+    "okNoRemind": "Ariza {date}, soat {time} ga qabul qilindi. {clinic} Telegram ko‘rsatilmagan — eslatma yuborilmaydi.",
+    "cancel": "Yozuvni bekor qilish",
+    "cancelled": "Yozuv bekor qilindi. Bu vaqt yana bo‘sh.",
+    "cancelFail": "Bekor qilib bo‘lmadi",
+    "slotTaken": "Bu slot band. Boshqa vaqtni tanlang."
+  },
+  "reviews": {
+    "eyebrow": "Sharhlar",
+    "title": "Bemorlar bilan ish qanday kechadi",
+    "forumEyebrow": "Forum",
+    "forumTitle": "O‘z fikringizni qoldiring",
+    "forumLead": "Qabul qanday o‘tganini yozing. Xabar saytda darhol ko‘rinadi.",
+    "name": "Ism",
+    "namePlaceholder": "Sizga qanday murojaat qilaylik",
+    "text": "Sharh",
+    "textPlaceholder": "Nima foydali bo‘ldi, suhbat qanday o‘tdi",
+    "rating": "Baho",
+    "submit": "Sharhni e’lon qilish",
+    "sending": "Yuborilmoqda...",
+    "ok": "Rahmat, sharh e’lon qilindi.",
+    "fail": "Sharh yuborilmadi",
+    "empty": "Hozircha sharh yo‘q — birinchisini siz yozishingiz mumkin."
+  },
+  "footer": {
+    "lead": "Shifokor-nevrolog {name} ga yozilish. Sayt va Telegramdagi slotlar bir xil.",
+    "contacts": "Aloqa",
+    "booking": "Qabul",
+    "phone": "Administrator: {value}",
+    "bot": "Bot: {value}",
+    "admin": "Administrator kirishi"
+  },
+  "lang": {
+    "ask": "Выберите язык / Tilni tanlang / Choose language",
+    "askCommands": "Tilni buyruq bilan tanlang:\n/ru Русский\n/uz O‘zbekcha\n/en English",
+    "ru": "Русский",
+    "uz": "O‘zbekcha",
+    "en": "English"
+  },
+  "bot": {
+    "intro": "Assalomu alaykum! Bu nevrolog Xamidova Sevara Mirjalilovnaga yozilish.\nKattalar va bolalar nevrologiyasi, oldindan yozilish, 09:00–13:00.\nDu, Chor, Ju — Medion Family Hospital, Istirohat ko‘chasi, 258.\nSe va Shanba — CityMed Clinic, Farobiy ko‘chasi, 415.\n\nKalendar — yozuv maydoni yonidagi «Qabul» tugmasi.",
+    "introGroup": "Assalomu alaykum! Bu nevrolog Xamidova Sevara Mirjalilovnaga yozilish.\nKattalar va bolalar nevrologiyasi, oldindan yozilish, 09:00–13:00.\nDu, Chor, Ju — Medion Family Hospital, Istirohat ko‘chasi, 258.\nSe va Shanba — CityMed Clinic, Farobiy ko‘chasi, 415.\n\nYozilish uchun pastdagi «Qabul» tugmasini bosing.",
+    "introChatOnly": "Assalomu alaykum! Bu nevrolog Xamidova Sevara Mirjalilovnaga yozilish.\nKattalar va bolalar nevrologiyasi, oldindan yozilish, 09:00–13:00.\nDu, Chor, Ju — Medion Family Hospital, Istirohat ko‘chasi, 258.\nSe va Shanba — CityMed Clinic, Farobiy ko‘chasi, 415.\n\nKun va vaqtni tanlash uchun «Chatda» ni bosing.",
+    "inChat": "Chatda",
+    "askName": "Ismingiz nima?",
+    "askPhone": "Telefon raqamingizni yozing.",
+    "sendPhone": "Telefonni yuborish",
+    "pickDay": "Kunni tanlang:",
+    "noDays": "Yaqin haftalarda bo‘sh kun yo‘q. Keyinroq urinib ko‘ring.",
+    "calendarFail": "Kalendarni yuklab bo‘lmadi. Dr. Sevara sayti ishlayotganini tekshiring.",
+    "slotsOn": "{date} uchun bo‘sh vaqt:{where}",
+    "noSlotsDay": "Bu kunga slotlar band. Boshqa kunni tanlang.",
+    "slotsFail": "Slotlarni olishning imkoni bo‘lmadi.",
+    "confirmTitle": "Arizani tekshiring:",
+    "confirmName": "ism: {name}",
+    "confirmPhone": "raqam: {phone}",
+    "confirmDate": "sana: {date}, soat {time}",
+    "confirmClinic": "klinika: {clinic}",
+    "confirmComment": "izoh: {comment}",
+    "noComment": "izohsiz",
+    "confirm": "Tasdiqlash",
+    "restart": "Qayta",
+    "cancel": "Yozuvni bekor qilish",
+    "bookFail": "Yozib bo‘lmadi. Boshqa slotni tanlang.",
+    "siteDown": "Sayt hozir ishlamayapti. Keyinroq urinib ko‘ring.",
+    "cancelFail": "Yozuvni bekor qilib bo‘lmadi.",
+    "slotFreed": "Bu vaqt yana bo‘sh.",
+    "bookAgain": "Yana yozilish uchun «Qabul» tugmasini bosing.",
+    "restartHint": "Qaytadan boshlaymiz. «Chatda» yoki yozuv maydoni yonidagi «Qabul» tugmasini bosing.",
+    "menuHint": "Kalendar — yozuv maydoni yonidagi «Qabul» tugmasi.",
+    "menuHintGroup": "Yozilish uchun pastdagi «Qabul» tugmasini bosing.",
+    "menu": "Qabul",
+    "langSaved": "Tayyor. Mijoz yozuvlari o‘zbek tilida keladi."
+  },
+  "mini": {
+    "title": "Qabul: {name}",
+    "lead": "{title} · kun klinikani belgilaydi",
+    "outside": "Mini App Telegram-botdan ochilishi kerak.",
+    "preview": "Mini App mahalliy ko‘rinishi — {url}. Yozuv admin panelda saqlanadi, Telegram eslatmasi ketmaydi.",
+    "previewHint": "Telegramdagidek, lekin botsiz. Kun va slotni tanlang, ariza yuboring — admin kalendarini tekshiring.",
+    "bookedChat": "Yozuv kartochkasi bot chatiga yuborildi.",
+    "slotFreed": "Bu vaqt yana bo‘sh.",
+    "canceling": "Bekor qilinmoqda..."
+  },
+  "admin": {
+    "metaTitle": "Admin panel Dr. Sevara",
+    "calendar": "Qabul kalendari",
+    "schedule": "Jadval",
+    "logout": "Chiqish",
+    "lead": "Telegramdagi mijozga qabuldan bir kun va 2 soat oldin avtomatik eslatma ketadi. Shu yerdan darhol yuborish mumkin.",
+    "search": "Mijozlarni ism yoki telefon bo‘yicha qidirish",
+    "noClients": "Mijoz topilmadi.",
+    "clientAppointments": "Mijoz yozuvlari",
+    "emptyDay": "Tanlangan kunga yozuv yo‘q.",
+    "emptySearch": "Topilgan mijozlarda bu filtr bo‘yicha yozuv yo‘q.",
+    "all": "Hammasi",
+    "cancelledFilter": "Bekor qilinganlar",
+    "cancelled": "Bekor qilindi",
+    "remind": "Telegramda eslatish",
+    "reminding": "Yuborilmoqda...",
+    "reminded": "Eslatma Telegramga yuborildi.",
+    "remindFail": "Yuborib bo‘lmadi",
+    "sourceMini": "Mini App orqali yozuv",
+    "sourceBot": "Telegram orqali yozuv",
+    "sourceWeb": "sayt orqali yozuv",
+    "visitOne": "{count} tashrif",
+    "visitFew": "{count} tashrif",
+    "visitMany": "{count} tashrif",
+    "loginTitle": "Admin panelga kirish",
+    "password": "Parol",
+    "enter": "Kirish",
+    "entering": "Kirilmoqda...",
+    "loginFail": "Parol noto‘g‘ri"
+  }
+}

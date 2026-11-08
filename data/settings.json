@@ -1,0 +1,38 @@
+{
+  "timezone": "Asia/Tashkent",
+  "workDays": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "workStart": "09:00",
+  "workEnd": "13:00",
+  "lunchStart": "00:00",
+  "lunchEnd": "00:00",
+  "slotMinutes": 30,
+  "bookingHorizonDays": 21,
+  "clinics": [
+    {
+      "id": "medion",
+      "name": "Medion Family Hospital",
+      "address": "ул. Истирохат, 258",
+      "workDays": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "id": "citymed",
+      "name": "CityMed Clinic",
+      "address": "ул. Фараби, 415",
+      "workDays": [
+        2,
+        6
+      ]
+    }
+  ],
+  "telegramGroupLocale": "ru"
+}

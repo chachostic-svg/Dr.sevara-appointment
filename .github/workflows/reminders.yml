@@ -1,0 +1,22 @@
+name: reminders
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send due appointment reminders
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$ADMIN_SECRET" ]; then
+            echo "Set APP_URL and ADMIN_SECRET repository secrets"
+            exit 1
+          fi
+          curl -fsS -X POST "$APP_URL/api/reminders/tick" \
+            -H "x-medora-secret: $ADMIN_SECRET"

@@ -1,0 +1,18 @@
+{
+  "name": "medora",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n web,bot -c teal,blue \"npm run dev:web\" \"npm run dev:bot\"",
+    "dev:web": "npm run dev --prefix web",
+    "dev:bot": "npm run dev --prefix bot",
+    "install:all": "npm install --prefix web && npm install --prefix bot"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "grammy": "^1.46.0"
+  }
+}

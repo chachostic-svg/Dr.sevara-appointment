@@ -1,0 +1,9 @@
+{
+  "installCommand": "npm install && npm install --prefix ../bot",
+  "crons": [
+    {
+      "path": "/api/reminders/tick",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}

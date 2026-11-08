@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --navy: #0b2a44;
+  --teal: #567c8d;
+  --sky: #c8d9e6;
+  --white: #ffffff;
+  --bg: #ffffff;
+  --bg-elev: #ffffff;
+  --ink: #0b2a44;
+  --muted: #567c8d;
+  --line: #c8d9e6;
+  --brand: #0b2a44;
+  --brand-soft: #c8d9e6;
+  --accent: #567c8d;
+  --danger: #9b3a3a;
+  --ok: #2f6b4f;
+  --shadow: 0 24px 60px rgba(11, 42, 68, 0.16);
+}
+
+.dark {
+  --bg: #0b2a44;
+  --bg-elev: #143a58;
+  --ink: #ffffff;
+  --muted: #c8d9e6;
+  --line: rgba(200, 217, 230, 0.22);
+  --brand: #c8d9e6;
+  --brand-soft: rgba(200, 217, 230, 0.12);
+  --accent: #c8d9e6;
+  --danger: #f0a3a3;
+  --ok: #8fd0b0;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+@theme inline {
+  --color-navy: var(--navy);
+  --color-teal: var(--teal);
+  --color-sky: var(--sky);
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+  --font-sans: var(--font-manrope);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+section[id] {
+  scroll-margin-top: 6.5rem;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-manrope), sans-serif;
+}
+
+.mini-shell {
+  padding-top: calc(1rem + var(--tg-safe-area-inset-top, 0px));
+  padding-bottom: calc(1.25rem + var(--tg-safe-area-inset-bottom, 0px));
+}
+
+::selection {
+  background: var(--sky);
+  color: var(--navy);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: now;
+  border: 0;
+}
+
+.magnetic {
+  transform: translate(var(--mx, 0px), var(--my, 0px)) scale(1);
+  transition: transform 180ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .magnetic:hover {
+    transform: translate(var(--mx, 0px), var(--my, 0px)) scale(var(--ms, 1.06));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .magnetic,
+  .magnetic:hover {
+    transform: none;
+    transition: none;
+  }
+}
