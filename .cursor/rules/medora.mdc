@@ -1,11 +1,11 @@
 ---
-description: Контекст клиники Medora — стек, палитра, что не копировать с шаблонов
+description: Контекст проекта Dr. Sevara — стек, палитра, правила интерфейса
 alwaysApply: true
 ---
 
-# Medora
+# Dr. Sevara
 
-Лендинг терапевта Анны Соколовой: Next.js + Tailwind + next-themes + grammY, JSON в `data/`. UI на русском.
+Сайт и система записи к врачу-неврологу Хамидовой Севаре Миржалиловне: Next.js + Tailwind + grammY + Neon Postgres (fallback на JSON в `data/`). Интерфейс на трёх языках (`ru`, `uz`, `en`).
 
 Палитра: Navy `#0B2A44`, Teal `#567C8D`, Sky `#C8D9E6`, White `#FFFFFF`. Без beige.
 

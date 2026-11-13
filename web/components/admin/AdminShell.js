@@ -33,6 +33,15 @@ export function AdminShell({ children }) {
               Dr. Sevara
             </Link>
           </Magnetic>
+          <Magnetic className="md:hidden" strength={8}>
+            <button
+              type="button"
+              onClick={logout}
+              className="rounded-xl border border-line px-3 py-1.5 text-xs text-muted hover:text-ink"
+            >
+              {t("admin.logout")}
+            </button>
+          </Magnetic>
         </div>
         <div className="px-5 pb-4">
           <LanguageSwitch />

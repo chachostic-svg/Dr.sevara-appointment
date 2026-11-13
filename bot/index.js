@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
+import { processDueReminders } from "../shared/reminders.js";
 import { configureTelegram, getBot } from "./create-bot.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -34,7 +35,7 @@ if (!process.env.VERCEL) {
         headers: { "x-medora-secret": reminderSecret },
       });
     } catch {
-      // сайт ещё не поднялся
+      await processDueReminders().catch(() => {});
     }
   }
 

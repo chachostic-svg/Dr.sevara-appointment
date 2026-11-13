@@ -1,11 +1,13 @@
 import { isActiveStatus } from "./calendar.js";
-import { formatHumanDate } from "./format.js";
+import { formatHumanDate, localizedDoctor } from "./format.js";
+import { normalizeLocale } from "./i18n.js";
 import { wallTimeToUtcMs } from "./when.js";
 import { getAppointments, getClients, getDoctor, getSettings, updateAppointment } from "./store.js";
 import { resolveTelegramChatId, sendTelegramMessage } from "./telegram.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+let activeReminderRun = null;
 
 export function bookedViaTelegram(appointment) {
   return appointment.source === "bot" || appointment.source === "mini";
@@ -45,16 +47,104 @@ export function appointmentStartMs(appointment, timeZone) {
   return wallTimeToUtcMs(appointment.date, appointment.time, timeZone);
 }
 
-function clinicLine(appointment) {
+function clinicLine(appointment, locale = "ru") {
   const clinic = [appointment.clinicName, appointment.clinicAddress].filter(Boolean).join(", ");
-  return clinic ? `Клиника: ${clinic}.` : "";
+  if (!clinic) return "";
+  if (locale === "uz") return `Klinika: ${clinic}.`;
+  if (locale === "en") return `Clinic: ${clinic}.`;
+  return `Клиника: ${clinic}.`;
 }
 
 export function formatReminderText(kind, appointment, doctor) {
-  const doctorName = doctor?.name || "Хамидовой Севаре Миржалиловне";
-  const when = `${formatHumanDate(appointment.date)} в ${appointment.time}`;
-  const where = clinicLine(appointment);
-  const phone = doctor?.contacts?.phone ? `Телефон администратора: ${doctor.contacts.phone}.` : "";
+  const locale = normalizeLocale(appointment?.locale);
+  const locDoc = localizedDoctor(locale, doctor);
+  const doctorName = locDoc?.name || doctor?.name || "Хамидова Севара Миржалиловна";
+  const dateStr = formatHumanDate(appointment.date, "long", locale);
+  const where = clinicLine(appointment, locale);
+  const adminPhone = doctor?.contacts?.phone || "";
+
+  if (locale === "uz") {
+    const when = `${dateStr}, soat ${appointment.time}`;
+    const phone = adminPhone ? `Administrator telefoni: ${adminPhone}.` : "";
+    if (kind === "day") {
+      return [
+        "Qabul haqida eslatma",
+        "",
+        `Ertaga, ${when} da shifokor ${doctorName} qabuliga yozilgansiz.`,
+        where || null,
+        phone || null,
+        "",
+        "Agar tashrifni ko‘chirish kerak bo‘lsa, shu chatda javob bering yoki administratorga qo‘ng‘iroq qiling.",
+      ]
+        .filter((line) => line != null)
+        .join("\n");
+    }
+    if (kind === "hours") {
+      return [
+        "Qabul haqida eslatma",
+        "",
+        `2 soatdan keyin, soat ${appointment.time} da shifokor ${doctorName} qabuli. Sizni kutamiz.`,
+        where || null,
+        phone || null,
+      ]
+        .filter((line) => line != null)
+        .join("\n");
+    }
+    return [
+      "Qabul haqida eslatma",
+      "",
+      `Siz ${when} da shifokor ${doctorName} qabuliga yozilgansiz.`,
+      where || null,
+      phone || null,
+      "",
+      "Agar rejalaringiz o‘zgargan bo‘lsa, shu chatda javob bering yoki administratorga qo‘ng‘iroq qiling.",
+    ]
+      .filter((line) => line != null)
+      .join("\n");
+  }
+
+  if (locale === "en") {
+    const when = `${dateStr} at ${appointment.time}`;
+    const phone = adminPhone ? `Administrator phone: ${adminPhone}.` : "";
+    if (kind === "day") {
+      return [
+        "Appointment reminder",
+        "",
+        `Tomorrow, ${when}, you have an appointment with ${doctorName}.`,
+        where || null,
+        phone || null,
+        "",
+        "If you need to reschedule, reply in this chat or call the administrator.",
+      ]
+        .filter((line) => line != null)
+        .join("\n");
+    }
+    if (kind === "hours") {
+      return [
+        "Appointment reminder",
+        "",
+        `In 2 hours, at ${appointment.time}, you have an appointment with ${doctorName}. We look forward to seeing you.`,
+        where || null,
+        phone || null,
+      ]
+        .filter((line) => line != null)
+        .join("\n");
+    }
+    return [
+      "Appointment reminder",
+      "",
+      `You are booked for ${when} with ${doctorName}.`,
+      where || null,
+      phone || null,
+      "",
+      "If your plans have changed, reply in this chat or call the administrator.",
+    ]
+      .filter((line) => line != null)
+      .join("\n");
+  }
+
+  const when = `${dateStr} в ${appointment.time}`;
+  const phone = adminPhone ? `Телефон администратора: ${adminPhone}.` : "";
 
   if (kind === "day") {
     return [
@@ -142,26 +232,34 @@ export async function sendAppointmentReminder(appointment, kind, options = {}) {
 }
 
 export async function processDueReminders(now = new Date()) {
-  const settings = await getSettings();
-  const doctor = await getDoctor();
-  const clients = await getClients();
-  const nowMs = now.getTime();
-  const sent = [];
+  if (activeReminderRun) return activeReminderRun;
+  activeReminderRun = (async () => {
+    try {
+      const settings = await getSettings();
+      const doctor = await getDoctor();
+      const clients = await getClients();
+      const nowMs = now.getTime();
+      const sent = [];
 
-  for (const appointment of await getAppointments()) {
-    const kinds = dueReminderKinds(appointment, nowMs, settings.timezone, clients);
-    if (!kinds.length) continue;
+      for (const appointment of await getAppointments()) {
+        const kinds = dueReminderKinds(appointment, nowMs, settings.timezone, clients);
+        if (!kinds.length) continue;
 
-    for (const kind of kinds) {
-      const result = await sendAppointmentReminder(appointment, kind, { doctor, clients });
-      if (result.ok) {
-        sent.push({ id: appointment.id, kind });
-        appointment.reminders = result.appointment.reminders;
+        for (const kind of kinds) {
+          const result = await sendAppointmentReminder(appointment, kind, { doctor, clients });
+          if (result.ok) {
+            sent.push({ id: appointment.id, kind });
+            appointment.reminders = result.appointment.reminders;
+          }
+        }
       }
-    }
-  }
 
-  return { sent, at: now.toISOString() };
+      return { sent, at: now.toISOString() };
+    } finally {
+      activeReminderRun = null;
+    }
+  })();
+  return activeReminderRun;
 }
 
 export function reminderMeta(appointment, nowMs, timeZone, clients = []) {

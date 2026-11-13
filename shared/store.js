@@ -101,11 +101,12 @@ export async function getDoctor() {
 }
 
 export async function getSettings() {
-  if (!useDatabase()) return readJson("settings.json");
+  const defaults = readJson("settings.json");
+  if (!useDatabase()) return defaults;
   await ensureSchema();
   const sql = await db();
   const rows = await sql`SELECT data FROM settings WHERE id = 1`;
-  return rows[0]?.data || readJson("settings.json");
+  return rows[0]?.data ? { ...defaults, ...rows[0].data } : defaults;
 }
 
 export async function patchSettings(partial) {
@@ -118,10 +119,15 @@ export async function patchSettings(partial) {
   }
   await ensureSchema();
   const sql = await db();
-  const settings = { ...(await getSettings()), ...partial };
-  await sql`INSERT INTO settings (id, data) VALUES (1, ${jsonParam(settings)}::jsonb)
-    ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`;
-  return settings;
+  const defaults = readJson("settings.json");
+  const rows = await sql`
+    INSERT INTO settings (id, data)
+    VALUES (1, ${jsonParam({ ...defaults, ...partial })}::jsonb)
+    ON CONFLICT (id) DO UPDATE
+    SET data = settings.data || ${jsonParam(partial)}::jsonb
+    RETURNING data
+  `;
+  return { ...defaults, ...(rows[0]?.data || partial) };
 }
 
 export async function getReviews() {
@@ -298,11 +304,13 @@ export async function updateAppointment(id, patch) {
   }
   await ensureSchema();
   const sql = await db();
-  const rows = await sql`SELECT payload FROM appointments WHERE id = ${id}`;
-  if (!rows[0]?.payload) return null;
-  const updated = { ...rows[0].payload, ...patch };
-  await sql`UPDATE appointments SET payload = ${jsonParam(updated)}::jsonb WHERE id = ${id}`;
-  return updated;
+  const rows = await sql`
+    UPDATE appointments
+    SET payload = payload || ${jsonParam(patch)}::jsonb
+    WHERE id = ${id}
+    RETURNING payload
+  `;
+  return rows[0]?.payload || null;
 }
 
 export async function findAppointment(id) {

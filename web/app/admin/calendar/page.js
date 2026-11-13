@@ -57,6 +57,7 @@ export default function AdminCalendarPage() {
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState({});
+  const [cancelingId, setCancelingId] = useState("");
   const searching = Boolean(query.trim());
 
   const matchedAppointments = useMemo(
@@ -71,6 +72,10 @@ export default function AdminCalendarPage() {
 
   const dates = useMemo(() => dateWindow(), []);
   const today = dates[2];
+
+  useEffect(() => {
+    fetch("/api/telegram/setup", { method: "POST" }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (searching) return;
@@ -90,6 +95,21 @@ export default function AdminCalendarPage() {
       ...current,
       [id]: ok ? "sent" : payload.error || t("admin.remindFail"),
     }));
+    await load();
+  }
+
+  async function cancelAppointment(id) {
+    setCancelingId(id);
+    const { ok, data: payload } = await fetchJson(`/api/appointments/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "cancelled" }),
+    });
+    setCancelingId("");
+    if (!ok) {
+      setNotice((current) => ({ ...current, [id]: payload.error || t("booking.cancelFail") }));
+      return;
+    }
     await load();
   }
 
@@ -198,16 +218,28 @@ export default function AdminCalendarPage() {
                   ) : null}
                 </div>
               </div>
-              {item.status !== "cancelled" && item.canRemind && (
+              {item.status !== "cancelled" && (
                 <div className="mt-4 flex flex-wrap gap-2">
+                  {item.canRemind && (
+                    <Magnetic strength={8}>
+                      <button
+                        type="button"
+                        disabled={notice[item.id] === "sending"}
+                        onClick={() => sendReminder(item.id)}
+                        className="rounded-xl border border-line px-4 py-2 text-sm"
+                      >
+                        {notice[item.id] === "sending" ? t("admin.reminding") : t("admin.remind")}
+                      </button>
+                    </Magnetic>
+                  )}
                   <Magnetic strength={8}>
                     <button
                       type="button"
-                      disabled={notice[item.id] === "sending"}
-                      onClick={() => sendReminder(item.id)}
-                      className="rounded-xl border border-line px-4 py-2 text-sm"
+                      disabled={cancelingId === item.id}
+                      onClick={() => cancelAppointment(item.id)}
+                      className="rounded-xl border border-line px-4 py-2 text-sm text-danger"
                     >
-                      {notice[item.id] === "sending" ? t("admin.reminding") : t("admin.remind")}
+                      {cancelingId === item.id ? t("mini.canceling") : t("booking.cancel")}
                     </button>
                   </Magnetic>
                 </div>

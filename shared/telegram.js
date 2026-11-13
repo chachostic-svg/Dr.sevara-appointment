@@ -109,10 +109,51 @@ export function formatAppointmentMessage(appointment, locale) {
     .join("\n");
 }
 
-async function groupLocale() {
+async function groupConfig() {
   const { getSettings } = await import("./store.js");
   const settings = await getSettings();
-  return normalizeLocale(settings.telegramGroupLocale);
+  return {
+    locale: normalizeLocale(settings.telegramGroupLocale),
+    savedChatId: String(settings.telegramGroupId || "").trim(),
+  };
+}
+
+async function saveGroupChatId(chatId) {
+  const clean = String(chatId || "").trim();
+  if (!clean) return;
+  try {
+    const { getSettings, patchSettings } = await import("./store.js");
+    const current = await getSettings();
+    if (String(current.telegramGroupId || "").trim() !== clean) {
+      await patchSettings({ telegramGroupId: clean });
+    }
+  } catch (error) {
+    console.error("Failed to persist telegramGroupId:", error);
+  }
+}
+
+export async function resolveGroupChatCandidates(preferredChatId = "") {
+  const { savedChatId } = await groupConfig();
+  const envChatId = String(process.env.TELEGRAM_GROUP_ID || "").trim();
+  const rawList = [preferredChatId, savedChatId, envChatId]
+    .map((id) => String(id || "").trim())
+    .filter(Boolean);
+
+  const candidates = [];
+  const add = (value) => {
+    if (value && !candidates.includes(value)) {
+      candidates.push(value);
+    }
+  };
+
+  for (const id of rawList) {
+    add(id);
+    if (/^-\d+$/.test(id) && !id.startsWith("-100")) {
+      add(`-100${id.slice(1)}`);
+    }
+  }
+
+  return candidates;
 }
 
 async function appointmentForGroup(appointment, locale) {
@@ -121,91 +162,158 @@ async function appointmentForGroup(appointment, locale) {
 }
 
 export async function sendTelegramMessage(chatId, text, extra = {}) {
-  const token = process.env.BOT_TOKEN;
-  if (!token || !chatId) {
+  const token = String(process.env.BOT_TOKEN || "").trim();
+  const targetId = String(chatId || "").trim();
+  if (!token || !targetId) {
     return { skipped: true };
   }
 
-  try {
+  async function postSend(target) {
     const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: chatId,
+        chat_id: target,
         text,
         ...extra,
       }),
     });
-
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      console.error("Telegram send failed:", data);
-      return { skipped: false, ok: false, details: data };
+    return { ok: response.ok, data };
+  }
+
+  try {
+    let usedChatId = targetId;
+    let { ok, data } = await postSend(usedChatId);
+
+    const migratedTo = data?.parameters?.migrate_to_chat_id;
+    if (!ok && migratedTo) {
+      usedChatId = String(migratedTo);
+      await saveGroupChatId(usedChatId);
+      ({ ok, data } = await postSend(usedChatId));
     }
 
-    return { skipped: false, ok: true, messageId: data.result?.message_id };
+    if (!ok) {
+      console.error("Telegram send failed:", data);
+      return { skipped: false, ok: false, details: data, chatId: usedChatId };
+    }
+
+    return {
+      skipped: false,
+      ok: true,
+      messageId: data.result?.message_id,
+      chatId: String(data.result?.chat?.id ?? usedChatId),
+    };
   } catch (error) {
     console.error("Telegram send failed:", error);
-    return { skipped: false, ok: false, details: { error: String(error) } };
+    return { skipped: false, ok: false, details: { error: String(error) }, chatId: targetId };
   }
 }
 
 export async function editTelegramMessage(chatId, messageId, text, extra = {}) {
-  const token = process.env.BOT_TOKEN;
-  if (!token || !chatId || !messageId) {
+  const token = String(process.env.BOT_TOKEN || "").trim();
+  const targetId = String(chatId || "").trim();
+  if (!token || !targetId || !messageId) {
     return { skipped: true };
   }
 
-  try {
+  async function postEdit(target) {
     const response = await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: chatId,
+        chat_id: target,
         message_id: messageId,
         text,
         ...extra,
       }),
     });
-
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      console.error("Telegram edit failed:", data);
-      return { skipped: false, ok: false, details: data };
+    return { ok: response.ok, data };
+  }
+
+  try {
+    let usedChatId = targetId;
+    let { ok, data } = await postEdit(usedChatId);
+
+    const migratedTo = data?.parameters?.migrate_to_chat_id;
+    if (!ok && migratedTo) {
+      usedChatId = String(migratedTo);
+      await saveGroupChatId(usedChatId);
+      ({ ok, data } = await postEdit(usedChatId));
     }
 
-    return { skipped: false, ok: true };
+    if (!ok) {
+      console.error("Telegram edit failed:", data);
+      return { skipped: false, ok: false, details: data, chatId: usedChatId };
+    }
+
+    return { skipped: false, ok: true, chatId: usedChatId };
   } catch (error) {
     console.error("Telegram edit failed:", error);
-    return { skipped: false, ok: false, details: { error: String(error) } };
+    return { skipped: false, ok: false, details: { error: String(error) }, chatId: targetId };
   }
 }
 
 export async function notifyTelegramGroup(appointment) {
-  const chatId = process.env.TELEGRAM_GROUP_ID;
-  const locale = await groupLocale();
-  const localized = await appointmentForGroup(appointment, locale);
-  const result = await sendTelegramMessage(chatId, formatAppointmentMessage(localized, locale));
-  if (result.ok && result.messageId) {
-    const { updateAppointment } = await import("./store.js");
-    await updateAppointment(appointment.id, { telegramGroupMessageId: result.messageId });
+  const { locale, savedChatId } = await groupConfig();
+  const candidates = await resolveGroupChatCandidates(appointment?.telegramGroupChatId);
+  if (!candidates.length) {
+    return { skipped: true };
   }
-  return result;
+
+  const localized = await appointmentForGroup(appointment, locale);
+  const text = formatAppointmentMessage(localized, locale);
+
+  let lastResult = { skipped: true };
+  for (const candidate of candidates) {
+    const result = await sendTelegramMessage(candidate, text);
+    lastResult = result;
+    if (result.ok) {
+      const actualChatId = String(result.chatId || candidate);
+      if (actualChatId && actualChatId !== savedChatId) {
+        await saveGroupChatId(actualChatId);
+      }
+      if (result.messageId) {
+        const { updateAppointment } = await import("./store.js");
+        await updateAppointment(appointment.id, {
+          telegramGroupMessageId: result.messageId,
+          telegramGroupChatId: actualChatId,
+        });
+      }
+      return result;
+    }
+  }
+  return lastResult;
 }
 
 export async function strikeGroupAppointment(appointment) {
-  const chatId = process.env.TELEGRAM_GROUP_ID;
-  const locale = await groupLocale();
+  const { locale } = await groupConfig();
+  const candidates = await resolveGroupChatCandidates(appointment?.telegramGroupChatId);
+  if (!candidates.length) {
+    return { skipped: true };
+  }
+
   const localized = await appointmentForGroup(appointment, locale);
   const text = formatAppointmentMessage(localized, locale);
   const html = `<s>${escapeHtml(text)}</s>\n<b>${groupNotifyCopy(locale).cancelled}</b>`;
+
   if (appointment.telegramGroupMessageId) {
-    const edited = await editTelegramMessage(chatId, appointment.telegramGroupMessageId, html, {
-      parse_mode: "HTML",
-    });
-    if (edited.ok || edited.skipped) return edited;
+    for (const candidate of candidates) {
+      const edited = await editTelegramMessage(candidate, appointment.telegramGroupMessageId, html, {
+        parse_mode: "HTML",
+      });
+      if (edited.ok || edited.skipped) return edited;
+    }
   }
-  return sendTelegramMessage(chatId, html, { parse_mode: "HTML" });
+
+  let lastResult = { skipped: true };
+  for (const candidate of candidates) {
+    const sent = await sendTelegramMessage(candidate, html, { parse_mode: "HTML" });
+    lastResult = sent;
+    if (sent.ok || sent.skipped) return sent;
+  }
+  return lastResult;
 }
 
 export async function sendPatientBookingCard(appointment, doctor) {
@@ -240,4 +348,40 @@ export async function strikePatientBookingCard(appointment, doctor) {
     `${formatBookingCard(appointment, cardDoctor, { locale, cancelled: true })}\n\n${copy.slotFreed}`,
     { reply_markup: { inline_keyboard: [] } }
   );
+}
+
+let flushingGroup = false;
+
+export async function flushUnsentGroupAppointments({ minAgeMs = 0 } = {}) {
+  if (flushingGroup) return;
+  flushingGroup = true;
+  try {
+    const { getAppointments, getSettings } = await import("./store.js");
+    const { compareAppointmentsAsc, formatDateISO, isActiveStatus } = await import("./calendar.js");
+    const settings = await getSettings();
+    const today = formatDateISO(new Date(), settings.timezone);
+    const now = Date.now();
+    const appointments = await getAppointments();
+    const unsent = appointments
+      .filter((item) => {
+        if (!isActiveStatus(item.status) || item.date < today || item.telegramGroupMessageId) {
+          return false;
+        }
+        if (minAgeMs > 0 && item.createdAt) {
+          const age = now - new Date(item.createdAt).getTime();
+          if (Number.isFinite(age) && age < minAgeMs) return false;
+        }
+        return true;
+      })
+      .sort(compareAppointmentsAsc)
+      .slice(0, 10);
+
+    for (const item of unsent) {
+      await notifyTelegramGroup(item);
+    }
+  } catch (error) {
+    console.error("Failed to flush unsent group appointments:", error);
+  } finally {
+    flushingGroup = false;
+  }
 }

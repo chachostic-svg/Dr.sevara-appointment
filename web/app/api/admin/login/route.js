@@ -14,6 +14,7 @@ export async function POST(request) {
   const jar = await cookies();
   jar.set(ADMIN_COOKIE, getSessionSecret(), {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,

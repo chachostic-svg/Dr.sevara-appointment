@@ -3,7 +3,13 @@ import { addAppointment, upsertClient } from "@/lib/store";
 import { reminderMeta } from "@/lib/reminders";
 import { clinicFields, clinicForDate, compareAppointmentsDesc, isSlotFree } from "@/lib/slots";
 import { isValidPhone, normalizePhone } from "@/lib/phone";
-import { normalizeTelegramUsername, notifyTelegramGroup, resolveTelegramChatId, sendPatientBookingCard } from "@/lib/telegram";
+import {
+  flushUnsentGroupAppointments,
+  normalizeTelegramUsername,
+  notifyTelegramGroup,
+  resolveTelegramChatId,
+  sendPatientBookingCard,
+} from "@/lib/telegram";
 import { parseTelegramWebAppUser } from "@/lib/telegram-init";
 import { isLocalMiniPreviewRequest } from "@/lib/mini-preview";
 import { isLocale } from "@/lib/i18n";
@@ -11,6 +17,7 @@ import { isLocale } from "@/lib/i18n";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  await flushUnsentGroupAppointments({ minAgeMs: 15_000 });
   const settings = await getSettings();
   const clients = await getClients();
   const nowMs = Date.now();

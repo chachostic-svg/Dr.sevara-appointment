@@ -1,9 +1,27 @@
 import { Bot, InlineKeyboard, Keyboard, session } from "grammy";
-import { formatLocalPhone, localPhoneDigits } from "../shared/phone.js";
+import { formatLocalPhone, isValidPhone, localPhoneDigits, normalizePhone } from "../shared/phone.js";
 import { addDaysISO, formatDateISO } from "../shared/calendar.js";
 import { formatBookingCard, formatHumanDate, localizedDoctor } from "../shared/format.js";
 import { DEFAULT_LOCALE, isLocale, normalizeLocale } from "../shared/i18n.js";
-import { deleteBotSession, patchSettings, readBotSession, writeBotSession } from "../shared/store.js";
+import { clinicFields, clinicForDate, getSlotsRange, isSlotFree } from "../shared/slots.js";
+import {
+  addAppointment,
+  deleteBotSession,
+  findAppointment,
+  getDoctor,
+  getSettings,
+  patchSettings,
+  readBotSession,
+  updateAppointment,
+  upsertClient,
+  writeBotSession,
+} from "../shared/store.js";
+import {
+  flushUnsentGroupAppointments,
+  normalizeTelegramUsername,
+  notifyTelegramGroup,
+  strikeGroupAppointment,
+} from "../shared/telegram.js";
 import { translate } from "./i18n.js";
 
 const CHAT_LABELS = ["В чате", "Chatda", "In chat"];
@@ -16,12 +34,17 @@ const SKIP_TEXT = [
   "/start",
 ];
 
-function apiUrl() {
-  return process.env.API_URL || "http://localhost:3000";
+function isTunnelUrl(value) {
+  return /trycloudflare\.com|ngrok/i.test(String(value || ""));
 }
 
 function webAppUrl() {
-  return /^https:\/\//i.test(process.env.WEBAPP_URL || "") ? process.env.WEBAPP_URL : "";
+  const explicit = String(process.env.WEBAPP_URL || "").trim();
+  if (/^https:\/\//i.test(explicit) && !(process.env.VERCEL && isTunnelUrl(explicit))) {
+    return explicit;
+  }
+  const origin = publicSiteUrl();
+  return origin ? `${origin}/mini` : "";
 }
 
 function groupId() {
@@ -154,15 +177,39 @@ export function createBot(token = process.env.BOT_TOKEN) {
     });
   }
 
+  async function rememberGroupChat(ctx, extra = {}) {
+    if (!isGroup(ctx) || !ctx.chat?.id) return;
+    const chatId = String(ctx.chat.id);
+    try {
+      const current = await getSettings();
+      if (String(current.telegramGroupId || "") !== chatId || Object.keys(extra).length > 0) {
+        await patchSettings({ telegramGroupId: chatId, ...extra });
+      }
+    } catch (error) {
+      console.error("Не удалось сохранить настройки группы:", error);
+    }
+  }
+
+  bot.use(async (ctx, next) => {
+    if (isGroup(ctx) && ctx.chat?.id) {
+      await rememberGroupChat(ctx);
+    }
+    await next();
+  });
+
   async function welcomeGroup(ctx) {
+    await rememberGroupChat(ctx);
     await ctx.reply(translate("ru", "lang.askCommands"));
+    await flushUnsentGroupAppointments();
   }
 
   async function askLanguage(ctx, afterLang) {
     ctx.session.step = "lang";
     ctx.session.afterLang = afterLang;
     if (isGroup(ctx)) {
+      await rememberGroupChat(ctx);
       await ctx.reply(translate("ru", "lang.askCommands"));
+      await flushUnsentGroupAppointments();
       return;
     }
     await ctx.reply(translate("ru", "lang.ask"), { reply_markup: langKeyboard() });
@@ -173,11 +220,16 @@ export function createBot(token = process.env.BOT_TOKEN) {
     ctx.session.step = "idle";
     ctx.session.afterLang = "intro";
     try {
-      await patchSettings({ telegramGroupLocale: locale });
+      const patch = { telegramGroupLocale: locale };
+      if (ctx.chat?.id) {
+        patch.telegramGroupId = String(ctx.chat.id);
+      }
+      await patchSettings(patch);
     } catch (error) {
       console.error("Не удалось сохранить язык группы:", error);
     }
     await ctx.reply(translate(locale, "bot.langSaved"));
+    await flushUnsentGroupAppointments();
   }
 
   async function startChatBooking(ctx) {
@@ -195,11 +247,7 @@ export function createBot(token = process.env.BOT_TOKEN) {
   }
 
   async function fetchSlots(from, to) {
-    const response = await fetch(`${apiUrl()}/api/slots?from=${from}&to=${to}`);
-    if (!response.ok) {
-      throw new Error("Не удалось получить слоты");
-    }
-    return response.json();
+    return getSlotsRange(from, to);
   }
 
   async function askDate(ctx) {
@@ -397,10 +445,27 @@ export function createBot(token = process.env.BOT_TOKEN) {
     await replyHome(ctx, t(ctx, introKey(ctx)), locale);
   });
 
+  bot.on("message:migrate_to_chat_id", async (ctx) => {
+    const nextId = ctx.message?.migrate_to_chat_id;
+    if (!nextId) return;
+    try {
+      await patchSettings({ telegramGroupId: String(nextId) });
+    } catch (error) {
+      console.error("Не удалось обновить мигрированный ID группы:", error);
+    }
+  });
+
   bot.on("message:contact", async (ctx) => {
     if (isGroup(ctx)) return;
     if (ctx.session.step !== "phone") return;
-    ctx.session.phone = localPhoneDigits(ctx.message.contact.phone_number);
+    const raw = ctx.message.contact.phone_number;
+    if (!isValidPhone(raw)) {
+      await ctx.reply(`${t(ctx, "bot.askPhone")}\n${t(ctx, "booking.phoneHint")}`, {
+        reply_markup: new Keyboard().requestContact(t(ctx, "bot.sendPhone")).resized(),
+      });
+      return;
+    }
+    ctx.session.phone = localPhoneDigits(raw);
     await askDate(ctx);
   });
 
@@ -415,6 +480,10 @@ export function createBot(token = process.env.BOT_TOKEN) {
     }
 
     if (ctx.session.step === "name") {
+      if (text.length < 2) {
+        await ctx.reply(t(ctx, "bot.askName"), { reply_markup: mainKeyboard(localeOf(ctx)) });
+        return;
+      }
       ctx.session.name = text;
       ctx.session.step = "phone";
       await ctx.reply(t(ctx, "bot.askPhone"), {
@@ -424,6 +493,12 @@ export function createBot(token = process.env.BOT_TOKEN) {
     }
 
     if (ctx.session.step === "phone") {
+      if (!isValidPhone(text)) {
+        await ctx.reply(`${t(ctx, "bot.askPhone")}\n${t(ctx, "booking.phoneHint")}`, {
+          reply_markup: new Keyboard().requestContact(t(ctx, "bot.sendPhone")).resized(),
+        });
+        return;
+      }
       ctx.session.phone = localPhoneDigits(text);
       await askDate(ctx);
       return;
@@ -453,35 +528,64 @@ export function createBot(token = process.env.BOT_TOKEN) {
     await ctx.answerCallbackQuery();
     const locale = localeOf(ctx);
     try {
-      const response = await fetch(`${apiUrl()}/api/appointments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: ctx.session.name,
-          phone: ctx.session.phone,
-          date: ctx.session.date,
-          time: ctx.session.time,
-          comment: ctx.session.comment,
-          source: "bot",
-          telegramId: ctx.from?.id,
-          locale,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        await ctx.reply(data.error || t(ctx, "bot.bookFail"), {
-          reply_markup: mainKeyboard(locale),
-        });
+      const name = String(ctx.session.name || "").trim();
+      const phone = normalizePhone(ctx.session.phone);
+      const date = String(ctx.session.date || "");
+      const time = String(ctx.session.time || "");
+      const comment = String(ctx.session.comment || "").trim();
+
+      if (!name || name.length < 2 || !phone || !date || !time) {
+        await ctx.reply(t(ctx, "bot.bookFail"), { reply_markup: mainKeyboard(locale) });
         ctx.session = { ...initialSession(), locale };
         return;
       }
-      const doctor = localizedDoctor(locale, data.doctor);
-      await ctx.reply(formatBookingCard(data.appointment, doctor, { locale }), {
-        reply_markup: new InlineKeyboard().text(t(ctx, "bot.cancel"), `cancel:${data.appointment.id}`),
+
+      if (!(await isSlotFree(date, time))) {
+        await ctx.reply(t(ctx, "booking.slotTaken"), { reply_markup: mainKeyboard(locale) });
+        await askDate(ctx);
+        return;
+      }
+
+      const settings = await getSettings();
+      const clinic = clinicForDate(date, settings);
+      if (!clinic) {
+        await ctx.reply(t(ctx, "bot.bookFail"), { reply_markup: mainKeyboard(locale) });
+        ctx.session = { ...initialSession(), locale };
+        return;
+      }
+
+      const telegramId = ctx.from?.id || null;
+      const telegramUsername = normalizeTelegramUsername(ctx.from?.username || "");
+      const client = await upsertClient({ name, phone, telegramId, telegramUsername });
+      const appointment = await addAppointment({
+        clientId: client.id,
+        name,
+        phone,
+        date,
+        time,
+        comment,
+        source: "bot",
+        status: "pending",
+        telegramId,
+        telegramUsername,
+        locale,
+        ...clinicFields(clinic),
       });
+
+      await notifyTelegramGroup(appointment);
+
+      const doctorRaw = await getDoctor();
+      const doctor = localizedDoctor(locale, { name: doctorRaw.name, title: doctorRaw.title });
+      const sent = await ctx.reply(formatBookingCard(appointment, doctor, { locale }), {
+        reply_markup: new InlineKeyboard().text(t(ctx, "bot.cancel"), `cancel:${appointment.id}`),
+      });
+      if (sent?.message_id) {
+        await updateAppointment(appointment.id, { telegramPatientMessageId: sent.message_id });
+      }
       await ctx.reply(t(ctx, "bot.menuHint"), { reply_markup: mainKeyboard(locale) });
       ctx.session = { ...initialSession(), locale };
-    } catch {
+    } catch (error) {
+      console.error("Bot confirm booking failed:", error);
       await ctx.reply(t(ctx, "bot.siteDown"), {
         reply_markup: mainKeyboard(locale),
       });
@@ -493,18 +597,29 @@ export function createBot(token = process.env.BOT_TOKEN) {
     const id = ctx.match[1];
     const locale = localeOf(ctx);
     try {
-      const response = await fetch(`${apiUrl()}/api/appointments/${id}/cancel`, { method: "POST" });
-      const data = await response.json();
-      if (!response.ok) {
-        await ctx.reply(data.error || t(ctx, "bot.cancelFail"), { reply_markup: mainKeyboard(locale) });
+      const existing = await findAppointment(id);
+      if (!existing) {
+        await ctx.reply(t(ctx, "bot.cancelFail"), { reply_markup: mainKeyboard(locale) });
         return;
       }
-      const doctor = localizedDoctor(locale, data.doctor);
-      const text = formatBookingCard(data.appointment, doctor, {
+      const doctorRaw = await getDoctor();
+      const doctorCard = { name: doctorRaw.name, title: doctorRaw.title };
+      let appointment = existing;
+      if (existing.status !== "cancelled") {
+        appointment = await updateAppointment(id, {
+          status: "cancelled",
+          cancelledAt: new Date().toISOString(),
+        });
+        await strikeGroupAppointment(appointment);
+      }
+
+      const cardLocale = normalizeLocale(appointment?.locale || locale);
+      const doctor = localizedDoctor(cardLocale, doctorCard);
+      const text = formatBookingCard(appointment, doctor, {
         cancelled: true,
-        locale: data.appointment?.locale || locale,
+        locale: cardLocale,
       });
-      const freed = translate(normalizeLocale(data.appointment?.locale || locale), "bot.slotFreed");
+      const freed = translate(cardLocale, "bot.slotFreed");
       try {
         await ctx.editMessageText(`${text}\n\n${freed}`, {
           reply_markup: { inline_keyboard: [] },
@@ -513,7 +628,8 @@ export function createBot(token = process.env.BOT_TOKEN) {
         await ctx.reply(`${text}\n\n${freed}`);
       }
       await ctx.reply(t(ctx, "bot.bookAgain"), { reply_markup: mainKeyboard(locale) });
-    } catch {
+    } catch (error) {
+      console.error("Bot cancel booking failed:", error);
       await ctx.reply(t(ctx, "bot.siteDown"), { reply_markup: mainKeyboard(locale) });
     }
   });
@@ -558,14 +674,32 @@ export async function configureTelegram(bot = getBot()) {
     { command: "uz", description: "O‘zbekcha" },
     { command: "en", description: "English" },
   ];
-  const chatId = groupId();
+  let chatId = groupId();
+  try {
+    const settings = await getSettings();
+    if (settings?.telegramGroupId) {
+      chatId = String(settings.telegramGroupId);
+    }
+  } catch {
+    // ignore
+  }
   try {
     await bot.api.setMyCommands([{ command: "start", description: translate("ru", "bot.menu") }], {
       scope: { type: "all_private_chats" },
     });
     await bot.api.setMyCommands(groupCommands, { scope: { type: "all_group_chats" } });
     if (chatId) {
-      await bot.api.setMyCommands(groupCommands, { scope: { type: "chat", chat_id: chatId } });
+      try {
+        await bot.api.setMyCommands(groupCommands, { scope: { type: "chat", chat_id: chatId } });
+      } catch (chatError) {
+        const migratedId = chatError?.parameters?.migrate_to_chat_id;
+        if (migratedId) {
+          await patchSettings({ telegramGroupId: String(migratedId) }).catch(() => {});
+          await bot.api
+            .setMyCommands(groupCommands, { scope: { type: "chat", chat_id: String(migratedId) } })
+            .catch(() => {});
+        }
+      }
     }
   } catch (error) {
     console.error("Не удалось настроить команды группы:", error);
@@ -589,15 +723,17 @@ export async function configureTelegram(bot = getBot()) {
 }
 
 export function publicSiteUrl() {
-  if (webAppUrl()) {
+  const explicitWebApp = String(process.env.WEBAPP_URL || "").trim();
+  if (/^https:\/\//i.test(explicitWebApp) && !(process.env.VERCEL && isTunnelUrl(explicitWebApp))) {
     try {
-      return new URL(webAppUrl()).origin;
+      return new URL(explicitWebApp).origin;
     } catch {
       // ignore
     }
   }
-  if (process.env.API_URL && /^https:\/\//i.test(process.env.API_URL)) {
-    return process.env.API_URL.replace(/\/$/, "");
+  const explicitApi = String(process.env.API_URL || "").trim();
+  if (/^https:\/\//i.test(explicitApi) && !(process.env.VERCEL && isTunnelUrl(explicitApi))) {
+    return explicitApi.replace(/\/$/, "");
   }
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
